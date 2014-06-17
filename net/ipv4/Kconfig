@@ -607,6 +607,20 @@ config TCP_CONG_CUBIC
 	depends on !TCP_CONG_ADVANCED
 	default y
 
+config TCP_CONG_WESTWOOD
+	tristate "TCP Westwood+"
+	default y
+	---help---
+	TCP Westwood+ is a sender-side only modification of the TCP Reno
+	protocol stack that optimizes the performance of TCP congestion
+	control. It is based on end-to-end bandwidth estimation to set
+	congestion window and slow start threshold after a congestion
+	episode. Using this estimation, TCP Westwood+ adaptively sets a
+	slow start threshold and a congestion window which takes into
+	account the bandwidth used  at the time congestion is experienced.
+	TCP Westwood+ significantly increases fairness wrt TCP Reno in
+	wired networks and throughput over wireless links.
+
 config DEFAULT_TCP_CONG
 	string
 	default "bic" if DEFAULT_BIC
