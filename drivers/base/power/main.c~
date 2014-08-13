@@ -1020,12 +1020,18 @@ int dpm_suspend_end(pm_message_t state)
 	if (error)
 		return error;
 	error = dpm_suspend_noirq(state);
+<<<<<<< HEAD
+	if (error)
+		dpm_resume_early(resume_event(state));
+	return error;
+=======
 	if (error) {
 		dpm_resume_early(state);
 		return error;
 	}
 
 	return 0;
+>>>>>>> 2e133e8... Port powersuspend from @faux123
 }
 EXPORT_SYMBOL_GPL(dpm_suspend_end);
 
