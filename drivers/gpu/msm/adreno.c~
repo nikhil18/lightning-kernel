@@ -224,7 +224,9 @@ static const struct {
 		512, 0, 2, SZ_512K, 0x3FF037, 0x3FF016 },
 	{ ADRENO_REV_A330, 3, 3, 0, ANY_ID,
 		"a330_pm4.fw", "a330_pfp.fw", &adreno_a3xx_gpudev,
+<<<<<<< HEAD
 		512, 0, 2, SZ_1M, NO_VER, NO_VER },
+=======
 		512, 0, 2, SZ_1M, NO_VER, NO_VER, 0x8AD, 0x2E4, 0x201, 0x200,
 		0x6, 0x20, 0x330020 },
 	{ ADRENO_REV_A305B, 3, 0, 5, 0x10,
@@ -356,6 +358,7 @@ static const struct input_device_id adreno_input_ids[] = {
 				BIT_MASK(ABS_MT_POSITION_Y) },
 	},
 	{ },
+>>>>>>> aaf48af... msm: kgsl: Wake up GPU only for touch events
 };
 
 static unsigned int adreno_isidle(struct kgsl_device *device);
