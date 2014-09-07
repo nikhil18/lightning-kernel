@@ -384,16 +384,47 @@ enum vdd_dig_levels {
 	VDD_DIG_NUM
 };
 
+#define GPU_MIN_VDD           900000
+#define GPU_MAX_VDD          1200000
+
+static int vdd_uv[] = {
+  [VDD_DIG_NONE]    =       0,
+  [VDD_DIG_LOW]     =  975000,
+  [VDD_DIG_NOMINAL] = 1075000,
+  [VDD_DIG_HIGH]    = 1175000
+};
+
+ssize_t get_gpu_vdd_levels_str(char *buf)
+{
+  int i, len = 0;
+
+  if (buf)
+  {
+    for (i = 1; i <= 3; i++)
+    {
+      len += sprintf(buf + len, "%d\n", vdd_uv[i]);
+    }
+  }
+  return len;
+}
+
+void set_gpu_vdd_levels(int uv_tbl[])
+{
+  int i;
+  for (i = 1; i <= 3; i++)
+  {
+    vdd_uv[i] = min(max(uv_tbl[i - 1],
+      GPU_MIN_VDD), GPU_MAX_VDD);
+  }
+}
+
 static int set_vdd_dig_8960(struct clk_vdd_class *vdd_class, int level)
 {
-	static const int vdd_uv[] = {
-		[VDD_DIG_NONE]    =       0,
-		[VDD_DIG_LOW]     =  945000,
-		[VDD_DIG_NOMINAL] = 1050000,
-		[VDD_DIG_HIGH]    = 1150000
-	};
-	return rpm_vreg_set_voltage(RPM_VREG_ID_PM8921_S3, RPM_VREG_VOTER3,
-				    vdd_uv[level], 1150000, 1);
+	int ret;
+  ret = rpm_vreg_set_voltage(RPM_VREG_ID_PM8921_S3, RPM_VREG_VOTER3,
+            vdd_uv[level], vdd_uv[VDD_DIG_HIGH], 1);
+  pr_alert("GPU VOLTAGE - %d - %d", vdd_uv[level], ret);
+  return ret;
 }
 
 static DEFINE_VDD_CLASS(vdd_dig, set_vdd_dig_8960, VDD_DIG_NUM);
@@ -3584,16 +3615,67 @@ static struct clk_freq_tbl clk_tbl_gfx3d_8930ab[] = {
 	F_END
 };
 
-static unsigned long fmax_gfx3d_8064ab[VDD_DIG_NUM] = {
+#ifdef CONFIG_GPU_OVERCLOCK
+static struct clk_freq_tbl clk_tbl_gfx3d_8064_oc[] = {
+	F_GFX3D(        0, gnd,   0,  0),
+	F_GFX3D( 27000000, pxo,   0,  0),
+	F_GFX3D( 48000000, pll8,  1,  8),
+	F_GFX3D( 54857000, pll8,  1,  7),
+	F_GFX3D( 64000000, pll8,  1,  6),
+	F_GFX3D( 76800000, pll8,  1,  5),
+	F_GFX3D( 96000000, pll8,  1,  4),
+	F_GFX3D(128000000, pll8,  1,  3),
+	F_GFX3D(145455000, pll2,  2, 11),
+	F_GFX3D(160000000, pll2,  1,  5),
+	F_GFX3D(177778000, pll2,  2,  9),
+	F_GFX3D(200000000, pll2,  1,  4),
+	F_GFX3D(228571000, pll2,  2,  7),
+	F_GFX3D(266667000, pll2,  1,  3),
+	F_GFX3D(325000000, pll15, 1,  3),
+	F_GFX3D(400000000, pll2,  1,  2),
+	F_GFX3D(487500000, pll15, 1,  2),
+	F_GFX3D(533333000, pll2,  2,  3),
+        F_GFX3D(627000000, pll2,  2,  3),
+	F_END
+};
+
+static unsigned long fmax_gfx3d_8064_oc[VDD_DIG_NUM]  = {
 	[VDD_DIG_LOW]     = 128000000,
 	[VDD_DIG_NOMINAL] = 325000000,
-	[VDD_DIG_HIGH]    = 450000000
+	[VDD_DIG_HIGH]    = 627000000
+};
+#else
+static struct clk_freq_tbl clk_tbl_gfx3d_8064[] = {
+	F_GFX3D(        0, gnd,   0,  0),
+	F_GFX3D( 27000000, pxo,   0,  0),
+	F_GFX3D( 48000000, pll8,  1,  8),
+	F_GFX3D( 54857000, pll8,  1,  7),
+	F_GFX3D( 64000000, pll8,  1,  6),
+	F_GFX3D( 76800000, pll8,  1,  5),
+	F_GFX3D( 96000000, pll8,  1,  4),
+	F_GFX3D(128000000, pll8,  1,  3),
+	F_GFX3D(145455000, pll2,  2, 11),
+	F_GFX3D(160000000, pll2,  1,  5),
+	F_GFX3D(177778000, pll2,  2,  9),
+	F_GFX3D(200000000, pll2,  1,  4),
+	F_GFX3D(228571000, pll2,  2,  7),
+	F_GFX3D(266667000, pll2,  1,  3),
+	F_GFX3D(325000000, pll15, 1,  3),
+	F_GFX3D(400000000, pll2,  1,  2),
+	F_END
 };
 
 static unsigned long fmax_gfx3d_8064[VDD_DIG_NUM] = {
 	[VDD_DIG_LOW]     = 128000000,
 	[VDD_DIG_NOMINAL] = 325000000,
 	[VDD_DIG_HIGH]    = 400000000
+};
+#endif
+
+static unsigned long fmax_gfx3d_8064ab[VDD_DIG_NUM] = {
+	[VDD_DIG_LOW]     = 128000000,
+	[VDD_DIG_NOMINAL] = 325000000,
+	[VDD_DIG_HIGH]    = 450000000
 };
 
 static unsigned long fmax_gfx3d_8930[VDD_DIG_NUM] = {
@@ -5326,11 +5408,7 @@ static struct clk_lookup msm_clocks_8064[] = {
 #ifdef CONFIG_MACH_LGE
 	CLK_LOOKUP("core_clk",		gsbi7_uart_clk.c,	""),
 #else
-# ifdef CONFIG_MSM_GSBI7_UART
-	CLK_LOOKUP("core_clk",          gsbi7_uart_clk.c, "msm_serial_hsl.3"),
-# else
 	CLK_LOOKUP("core_clk",          gsbi7_uart_clk.c,       ""),
-# endif
 #endif
 	CLK_LOOKUP("core_clk",		gsbi1_qup_clk.c,	"qup_i2c.0"),
 	CLK_LOOKUP("core_clk",		gsbi2_qup_clk.c,	"qup_i2c.2"),
@@ -5388,7 +5466,6 @@ static struct clk_lookup msm_clocks_8064[] = {
 	CLK_LOOKUP("iface_clk",		gsbi4_p_clk.c,		"msm_serial_hsl.0"),
 #endif
 	CLK_LOOKUP("iface_clk",		gsbi4_p_clk.c,		"qup_i2c.4"),
-	CLK_LOOKUP("iface_clk",		gsbi4_p_clk.c,	"msm_serial_hs.1"),
 	CLK_LOOKUP("iface_clk",		gsbi5_p_clk.c,		"msm_serial_hsl.0"),
 	CLK_LOOKUP("iface_clk",		gsbi5_p_clk.c,		"spi_qsd.0"),
 	CLK_LOOKUP("iface_clk",		gsbi5_p_clk.c,		"qup_i2c.5"),
@@ -6687,9 +6764,15 @@ static void __init msm8960_clock_pre_init(void)
 	 * Change the freq tables for and voltage requirements for
 	 * clocks which differ between chips.
 	 */
-	if (cpu_is_apq8064() || cpu_is_apq8064aa()) {
+        if (cpu_is_apq8064() || cpu_is_apq8064aa()) {
+#ifdef CONFIG_GPU_OVERCLOCK
+		gfx3d_clk.freq_tbl = clk_tbl_gfx3d_8064_oc;
+		gfx3d_clk.c.fmax = fmax_gfx3d_8064_oc;
+#else
+		gfx3d_clk.freq_tbl = clk_tbl_gfx3d_8064;
 		gfx3d_clk.c.fmax = fmax_gfx3d_8064;
-	}
+#endif
+        }	
 	if (cpu_is_apq8064ab()) {
 		gfx3d_clk.c.fmax = fmax_gfx3d_8064ab;
 	}
