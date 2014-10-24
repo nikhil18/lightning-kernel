@@ -2863,6 +2863,7 @@ config FORCE_FAST_CHARGE
 	bool "Force AC charge mode at will"
 	default y
 	help
+<<<<<<< HEAD
 	        A simple sysfs interface to force adapters that
 		are detected as USB to charge as AC.
 
@@ -2877,6 +2878,10 @@ config LCD_KCAL_STANDALONE
         default y
         help
           Enable MSM generic LCDC temperature Calibration.
+=======
+	  A simple sysfs interface to force adapters that
+          are detected as USB to charge as AC.
+>>>>>>> 791fe5a... msm: kgsl: Wake up GPU only for touch events
 
 config MSM_LIMITER
 	bool "MSM Frequency Limiter Driver"
