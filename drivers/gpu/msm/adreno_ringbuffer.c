@@ -248,8 +248,8 @@ err:
 	return ret;
 }
 
-
 int adreno_ringbuffer_load_pm4_ucode(struct kgsl_device *device)
+
 {
 	struct adreno_device *adreno_dev = ADRENO_DEVICE(device);
 	int i;
@@ -304,6 +304,7 @@ err:
 }
 
 int adreno_ringbuffer_load_pfp_ucode(struct kgsl_device *device)
+
 {
 	struct adreno_device *adreno_dev = ADRENO_DEVICE(device);
 	int i;
