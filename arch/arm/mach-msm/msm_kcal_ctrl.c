@@ -40,7 +40,7 @@ struct kcal_platform_data {
 	int (*refresh_display) (void);
 };
 
-static bool lut_updated = false;
+static bool lut_updated;
 static struct kcal_platform_data *kcal_ctrl_pdata;
 static int last_status_kcal_ctrl;
 
@@ -189,7 +189,7 @@ static void resetWorkingLut(void)
 }
 
 static void updateLUT(unsigned int lut_val, unsigned int color,
-			unsigned int posn)
+						unsigned int posn)
 {
 	int offset, mask;
 
@@ -206,7 +206,7 @@ static void updateLUT(unsigned int lut_val, unsigned int color,
 		offset = 0;
 		mask = 0x00ffff00;
 	} else
-		// bad color select!
+	/* bad color selected! */
 		return;
 
 	lcd_rgb_working_lut[posn] = (lcd_rgb_working_lut[posn] & mask) |
@@ -214,31 +214,27 @@ static void updateLUT(unsigned int lut_val, unsigned int color,
 }
 
 static ssize_t kgamma_store(struct device *dev, struct device_attribute *attr,
-                                                const char *buf, size_t count)
+						const char *buf, size_t count)
 {
 	int lut, color, posn;
 
 	if (!count)
 		return -EINVAL;
 
-	sscanf(buf, "%u %u %u", &lut, &color, &posn);
+	sscanf(buf, "%d %d %d", &lut, &color, &posn);
 
-	if (lut > 0xff)
-		return count;
-
-	if (posn > 0xff)
-		return count;
-
-	if (color > 2)
+	/* Don't update LUT if variables are out of Range */
+	if (lut > 0xff || posn > 0xff || color > 2)
 		return count;
 
 	updateLUT(lut, color, posn);
 	lut_updated = true;
+
 	return count;
 }
 
 static ssize_t kgamma_show(struct device *dev, struct device_attribute *attr,
-                                                                char *buf)
+								char *buf)
 {
 	int res = 0;
 
@@ -261,7 +257,7 @@ static ssize_t kgamma_reset_store(struct device *dev,
 	if (!count)
 		return -EINVAL;
 
-	sscanf(buf, "%u", &reset);
+	sscanf(buf, "%d", &reset);
 
 	if (reset)
 		resetWorkingLut();
@@ -298,18 +294,20 @@ static int update_lcdc_lut(void)
 
 static int kcal_set_values(int kcal_r, int kcal_g, int kcal_b)
 {
-        kcal_value.red = kcal_r;
-        kcal_value.green = kcal_g;
-        kcal_value.blue = kcal_b;
-        return 0;
+	kcal_value.red = kcal_r;
+	kcal_value.green = kcal_g;
+	kcal_value.blue = kcal_b;
+
+	return 0;
 }
 
 static int kcal_get_values(int *kcal_r, int *kcal_g, int *kcal_b)
 {
-        *kcal_r = kcal_value.red;
-        *kcal_g = kcal_value.green;
-        *kcal_b = kcal_value.blue;
-        return 0;
+	*kcal_r = kcal_value.red;
+	*kcal_g = kcal_value.green;
+	*kcal_b = kcal_value.blue;
+
+	return 0;
 }
 
 static int kcal_refresh_values(void)
@@ -328,7 +326,13 @@ static ssize_t kcal_store(struct device *dev, struct device_attribute *attr,
 		return -EINVAL;
 
 	sscanf(buf, "%d %d %d", &kcal_r, &kcal_g, &kcal_b);
+
+	if ((kcal_r > 255 || kcal_r < 0) || (kcal_g > 255 || kcal_g < 0)
+	|| (kcal_b > 255 || kcal_b < 0))
+		return -EINVAL;
+
 	kcal_ctrl_pdata->set_values(kcal_r, kcal_g, kcal_b);
+
 	return count;
 }
 
@@ -446,9 +450,9 @@ static void msm_kcal_late_resume(struct early_suspend *handler)
 }
 
 static struct early_suspend msm_kcal_early_suspend_struct_driver = {
-        .level = EARLY_SUSPEND_LEVEL_DISABLE_FB,
-        .suspend = msm_kcal_early_suspend,
-        .resume = msm_kcal_late_resume,
+	.level = EARLY_SUSPEND_LEVEL_DISABLE_FB,
+	.suspend = msm_kcal_early_suspend,
+	.resume = msm_kcal_late_resume,
 };
 
 int __init kcal_ctrl_init(void)
@@ -468,4 +472,3 @@ int __init kcal_ctrl_init(void)
 
 late_initcall(kcal_ctrl_init);
 MODULE_LICENSE("GPL and additional rights");
-
