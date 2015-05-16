@@ -11,14 +11,24 @@
  * of the License, or (at your option) any later version.
  */
 #include <linux/delay.h>
-#include <linux/slab.h>
-#include <linux/i2c.h>
 #include <linux/device.h>
+#include <linux/i2c.h>
 #include <linux/leds.h>
 #include <linux/leds-lm3533_ng.h>
 #include <linux/module.h>
 #include <linux/mutex.h>
 #include <linux/pm_runtime.h>
+#include <linux/slab.h>
+
+/* Backlight-Hack Variables */
+#define BCKL_STCK_MIN	10
+#define LOW_BR_HCK_VAL	2
+
+/*
+ * Backlight Hack is enabled by default to deal with sub-optimal userspace
+ * brightness mapping.
+ */
+static unsigned int lm3533_bl_hack = 1;
 
 static int autosuspend_delay_ms = 100;
 module_param(autosuspend_delay_ms, int, S_IRUGO);
@@ -697,14 +707,25 @@ static void lm3533_led_brightness(struct led_classdev *led_cdev,
 	struct device *dev = led_cdev->dev->parent;
 	struct lm3533_data *lm = dev_get_drvdata(dev);
 	struct lm3533_intf *intf = ldev_to_intf(led_cdev);
-	enum lm3533_control_bank b;
+	enum lm3533_control_bank b = 0;
 	int rc;
 	u8 bena;
 
-	if (value <= LED_OFF)
-		value = 0;
-	else if (value >= LED_FULL)
-		value = 255;
+	if (value < LED_OFF)
+		value = LED_OFF;
+	else if (value > LED_FULL)
+		value = LED_FULL;
+
+	/*
+	 * The lowest userspace brightness value for the LM3533_CBNKA-Bank
+	 * is 10. If we hit this lower-limit the bl_hack will reduce the
+	 * backlight brightness to the lowest possible value
+	 * (2 instead of 1 because there is no visible difference).
+	 */
+	if (lm3533_bl_hack && b == LM3533_CBNKA) {
+		if (value == BCKL_STCK_MIN)
+			value = LOW_BR_HCK_VAL;
+	}
 
 	dev_dbg(dev, "%s: brightness %d -> %d, als %d\n", led_cdev->name,
 			intf->brightness, value, intf->als);
@@ -1564,6 +1585,31 @@ static ssize_t lm3533_reset_store(struct device *dev,
 	return rc ? rc : count;
 }
 
+static ssize_t lm3533_bl_hack_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	return scnprintf(buf, PAGE_SIZE, "%u\n", lm3533_bl_hack);
+}
+
+static ssize_t lm3533_bl_hack_store(struct device *dev,
+	struct device_attribute *dev_attr, const char *buf, size_t count)
+{
+	unsigned long bl_hack;
+	int ret;
+
+	ret = kstrtoul(buf, 10, &bl_hack);
+
+	if (ret < 0 || ret > 1)
+		return -EINVAL;
+
+	if (bl_hack == 1)
+		lm3533_bl_hack = 1;
+	else
+		lm3533_bl_hack = 0;
+
+	return count;
+}
+
 static const DEVICE_ATTR(reset, S_IWUSR, NULL, lm3533_reset_store);
 static const DEVICE_ATTR(als_current, S_IWUSR | S_IRUSR,
 		lm3533_als_current_show, lm3533_als_current_store);
@@ -1584,6 +1630,7 @@ static const DEVICE_ATTR(als1_curve, S_IWUSR, NULL, lm3533_als1_store);
 static const DEVICE_ATTR(als2_curve, S_IWUSR, NULL, lm3533_als2_store);
 static const DEVICE_ATTR(als3_curve, S_IWUSR, NULL, lm3533_als3_store);
 static const DEVICE_ATTR(sync_lvbanks, S_IWUSR, NULL, lm3533_lvbnak_sync_store);
+static const DEVICE_ATTR(bl_hack, S_IRUGO | S_IWUSR, lm3533_bl_hack_show, lm3533_bl_hack_store);
 
 static const struct attribute *lm3533_attrs[] = {
 	&dev_attr_reset.attr,
@@ -1599,6 +1646,7 @@ static const struct attribute *lm3533_attrs[] = {
 	&dev_attr_rt_rate_ms.attr,
 	&dev_attr_start_shdn_ms.attr,
 	&dev_attr_sync_lvbanks.attr,
+	&dev_attr_bl_hack.attr,
 	NULL,
 };
 
@@ -1675,6 +1723,7 @@ static int __devinit lm3533_probe(struct i2c_client *client,
 
 	lm3533_set_startup_br(lm);
 	lm->recovery_mode = true;
+
 	rc = sysfs_create_files(&dev->kobj, lm3533_attrs);
 	if (rc) {
 		dev_err(dev, "%s: failed to create files.\n", __func__);
