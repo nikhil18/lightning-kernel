@@ -21,8 +21,8 @@
 #include <linux/slab.h>
 
 /* Backlight-Hack Variables */
-#define BCKL_STCK_MIN	10
-#define LOW_BR_HCK_VAL	2
+#define BL_STOCK_MIN	10
+#define LOW_BR_HACK_VAL	1
 
 /*
  * Backlight Hack is enabled by default to deal with sub-optimal userspace
@@ -719,12 +719,11 @@ static void lm3533_led_brightness(struct led_classdev *led_cdev,
 	/*
 	 * The lowest userspace brightness value for the LM3533_CBNKA-Bank
 	 * is 10. If we hit this lower-limit the bl_hack will reduce the
-	 * backlight brightness to the lowest possible value
-	 * (2 instead of 1 because there is no visible difference).
+	 * backlight brightness to the lowest possible value (1).
 	 */
 	if (lm3533_bl_hack && b == LM3533_CBNKA) {
-		if (value == BCKL_STCK_MIN)
-			value = LOW_BR_HCK_VAL;
+		if (value == BL_STOCK_MIN)
+			value = LOW_BR_HACK_VAL;
 	}
 
 	dev_dbg(dev, "%s: brightness %d -> %d, als %d\n", led_cdev->name,
