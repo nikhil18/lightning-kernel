@@ -93,8 +93,8 @@ static struct nightmare_tuners {
 	.inc_cpu_load_at_min_freq = ATOMIC_INIT(40),
 	.inc_cpu_load = ATOMIC_INIT(70),
 	.dec_cpu_load = ATOMIC_INIT(50),
-	.freq_for_responsiveness = ATOMIC_INIT(1958400),
-	.freq_for_responsiveness_max = ATOMIC_INIT(2496000),
+	.freq_for_responsiveness = ATOMIC_INIT(1350000),
+	.freq_for_responsiveness_max = ATOMIC_INIT(1512000),
 	.freq_step_at_min_freq = ATOMIC_INIT(40),
 	.freq_step = ATOMIC_INIT(40),
 	.freq_up_brake_at_min_freq = ATOMIC_INIT(30),
@@ -711,7 +711,7 @@ static int cpufreq_governor_nightmare(struct cpufreq_policy *policy,
 		}
 
 		this_nightmare_cpuinfo->enable = 1;
-		INIT_DELAYED_WORK_DEFERRABLE(&this_nightmare_cpuinfo->work, do_nightmare_timer);
+		INIT_DEFERRABLE_WORK(&this_nightmare_cpuinfo->work, do_nightmare_timer);
 		queue_delayed_work_on(this_nightmare_cpuinfo->cpu, system_wq, &this_nightmare_cpuinfo->work, delay);
 
 		break;
