@@ -32,31 +32,12 @@
 
 #include "acpuclock.h"
 
-<<<<<<< HEAD
-=======
 #ifdef CONFIG_MSM_SLEEPER
 /* maxscroff */
 uint32_t maxscroff_freq = 1026000;
 uint32_t maxscroff = 1;
 #endif
 
-static DEFINE_MUTEX(l2bw_lock);
-
-static struct clk *cpu_clk[NR_CPUS];
-static struct clk *l2_clk;
-static unsigned int freq_index[NR_CPUS];
-static struct cpufreq_frequency_table *freq_table;
-static unsigned int *l2_khz;
-static bool is_clk;
-static bool is_sync;
-static struct msm_bus_vectors *bus_vec_lst;
-static struct msm_bus_scale_pdata bus_bw = {
-	.name = "msm-cpufreq",
-	.active_only = 1,
-};
-static u32 bus_client;
-
->>>>>>> 3afc12e... msm: cpufreq: sysfs for max screen off frequency - default 1026MHz
 struct cpufreq_work_struct {
 	struct work_struct work;
 	struct cpufreq_policy *policy;
@@ -85,9 +66,6 @@ struct cpu_freq {
 
 static DEFINE_PER_CPU(struct cpu_freq, cpu_freq_info);
 
-<<<<<<< HEAD
-static int set_cpu_freq(struct cpufreq_policy *policy, unsigned int new_freq)
-=======
 #ifdef CONFIG_MSM_SLEEPER
 /**maxscroff**/
 static int __init cpufreq_read_arg_maxscroff(char *max_so)
@@ -106,39 +84,7 @@ __setup("max_so=", cpufreq_read_arg_maxscroff);
 /**end maxscroff**/
 #endif
 
-static void update_l2_bw(int *also_cpu)
-{
-	int rc = 0, cpu;
-	unsigned int index = 0;
-
-	mutex_lock(&l2bw_lock);
-
-	if (also_cpu)
-		index = freq_index[*also_cpu];
-
-	for_each_online_cpu(cpu) {
-		index = max(index, freq_index[cpu]);
-	}
-
-	if (l2_clk)
-		rc = clk_set_rate(l2_clk, l2_khz[index] * 1000);
-	if (rc) {
-		pr_err("Error setting L2 clock rate!\n");
-		goto out;
-	}
-
-	if (bus_client)
-		rc = msm_bus_scale_client_update_request(bus_client, index);
-	if (rc)
-		pr_err("Bandwidth req failed (%d)\n", rc);
-
-out:
-	mutex_unlock(&l2bw_lock);
-}
-
-static int set_cpu_freq(struct cpufreq_policy *policy, unsigned int new_freq,
-			unsigned int index)
->>>>>>> 3afc12e... msm: cpufreq: sysfs for max screen off frequency - default 1026MHz
+static int set_cpu_freq(struct cpufreq_policy *policy, unsigned int new_freq)
 {
 	int ret = 0;
 	int saved_sched_policy = -EINVAL;
