@@ -93,7 +93,7 @@ static struct nightmare_tuners {
 	.inc_cpu_load_at_min_freq = ATOMIC_INIT(40),
 	.inc_cpu_load = ATOMIC_INIT(70),
 	.dec_cpu_load = ATOMIC_INIT(50),
-	.freq_for_responsiveness = ATOMIC_INIT(1350000),
+	.freq_for_responsiveness = ATOMIC_INIT(1026000),
 	.freq_for_responsiveness_max = ATOMIC_INIT(1512000),
 	.freq_step_at_min_freq = ATOMIC_INIT(40),
 	.freq_step = ATOMIC_INIT(40),
