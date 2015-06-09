@@ -226,6 +226,7 @@ static const struct {
 		"a330_pm4.fw", "a330_pfp.fw", &adreno_a3xx_gpudev,
 		512, 0, 2, SZ_1M, NO_VER, NO_VER },
 <<<<<<< HEAD
+<<<<<<< HEAD
 		512, 0, 2, SZ_1M, NO_VER, NO_VER, 0x8AD, 0x2E4, 0x201, 0x200,
 		0x6, 0x20, 0x330020 },
 	{ ADRENO_REV_A305B, 3, 0, 5, 0x10,
@@ -357,6 +358,8 @@ static const struct input_device_id adreno_input_ids[] = {
 				BIT_MASK(ABS_MT_POSITION_Y) },
 	},
 	{ },
+=======
+>>>>>>> parent of 87cfc4d... some fixes
 =======
 >>>>>>> parent of 87cfc4d... some fixes
 };
