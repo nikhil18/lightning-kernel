@@ -321,7 +321,6 @@ static int __cpuinit msm_cpufreq_init(struct cpufreq_policy *policy)
 				policy->cpu, cur_freq);
 		return -EINVAL;
 	}
-<<<<<<< HEAD
 
 	if (cur_freq != table[index].frequency) {
 		int ret = 0;
@@ -335,19 +334,6 @@ static int __cpuinit msm_cpufreq_init(struct cpufreq_policy *policy)
 	}
 
 	policy->cur = cur_freq;
-=======
-	/*
-	 * Call set_cpu_freq unconditionally so that when cpu is set to
-	 * online, frequency limit will always be updated.
-	 */
-	ret = set_cpu_freq(policy, table[index].frequency, table[index].index);
-	if (ret)
-		return ret;
-	pr_debug("cpufreq: cpu%d init at %d switching to %d\n",
-			policy->cpu, cur_freq, table[index].frequency);
-
-	policy->cur = table[index].frequency;
->>>>>>> 01236d2... msm-sleeper: save previous max freq, add ex_max_freq interface, loosen permissions
 
 	policy->cpuinfo.transition_latency =
 		acpuclk_get_switch_time() * NSEC_PER_USEC;
@@ -474,6 +460,7 @@ struct freq_attr msm_cpufreq_attr_ex_max_freq = {
 
 
 /** maxscreen off sysfs interface **/
+
 static ssize_t show_max_screen_off_khz(struct cpufreq_policy *policy, char *buf)
 {
 	return sprintf(buf, "%u\n", maxscroff_freq);
@@ -546,14 +533,11 @@ struct freq_attr msm_cpufreq_attr_max_screen_off = {
 
 static struct freq_attr *msm_freq_attr[] = {
 	&cpufreq_freq_attr_scaling_available_freqs,
-<<<<<<< HEAD
-=======
 #ifdef CONFIG_MSM_SLEEPER
 	&msm_cpufreq_attr_max_screen_off_khz,
 	&msm_cpufreq_attr_max_screen_off,
 	&msm_cpufreq_attr_ex_max_freq,
 #endif
->>>>>>> 01236d2... msm-sleeper: save previous max freq, add ex_max_freq interface, loosen permissions
 	NULL,
 };
 
