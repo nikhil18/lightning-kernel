@@ -6,14 +6,9 @@
 
 lib-y		:= backtrace.o changebit.o csumipv6.o csumpartial.o   \
 		   csumpartialcopy.o csumpartialcopyuser.o clearbit.o \
-<<<<<<< HEAD
 		   delay.o findbit.o memchr.o memcpy.o		      \
-		   memmove.o memset.o memzero.o setbit.o              \
-		   strncpy_from_user.o strnlen_user.o                 \
-=======
-		   delay.o delay-loop.o findbit.o memchr.o memcpy.o   \
 		   memset.o memzero.o setbit.o                        \
->>>>>>> d35ceca... msm: memutils: memcpy, memmove, copy_page optimization
+		   strncpy_from_user.o strnlen_user.o                 \
 		   strchr.o strrchr.o                                 \
 		   testchangebit.o testclearbit.o testsetbit.o        \
 		   ashldi3.o ashrdi3.o lshrdi3.o muldi3.o             \
