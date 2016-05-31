@@ -357,7 +357,7 @@ KERNELFLAGS	= -munaligned-access -fforce-addr -fsingle-precision-constant -mcpu=
 MODFLAGS	= -DMODULE $(KERNELFLAGS)
 CFLAGS_MODULE   = $(MODFLAGS)
 AFLAGS_MODULE   = $(MODFLAGS)
-LDFLAGS_MODULE  = -T $(srctree)/scripts/module-common.lds
+LDFLAGS_MODULE  = --strip-debug
 CFLAGS_KERNEL	= $(KERNELFLAGS) -fpredictive-commoning
 AFLAGS_KERNEL	=
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
